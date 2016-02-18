@@ -8,7 +8,6 @@
 #include "cmontecarlo.h"
 #include "io.h"
 
-
 /** Look for a place to insert a value in an inversely sorted float array.
  *
  * @param x an inversely (largest to lowest) sorted float array
@@ -81,7 +80,7 @@ line_search (const double *nu, double nu_insert, int64_t number_of_lines,
     }
   return ret_val;
 }
-
+// returns i- mu*v/c
 double
 rpacket_doppler_factor (const rpacket_t *packet, const storage_model_t *storage)
 {
@@ -354,6 +353,7 @@ void
 increment_j_blue_estimator (const rpacket_t * packet, storage_model_t * storage,
                             double d_line, int64_t j_blue_idx)
 {
+    printf("123\n");
   double r = rpacket_get_r (packet);
   double r_interaction =
     sqrt (r * r + d_line * d_line +

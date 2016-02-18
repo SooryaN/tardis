@@ -10,6 +10,7 @@ import numpy as np
 
 logger = logging.getLevelName(__name__)
 
+
 class MontecarloRunner(object):
     """
     This class is designed as an interface between the Python part and the
@@ -23,11 +24,9 @@ class MontecarloRunner(object):
     t_rad_estimator_constant = ((np.pi**4 / (15 * 24 * zeta(5, 1))) *
                                 (const.h / const.k_B)).cgs.value
 
-
     def __init__(self, seed, spectrum_frequency):
         self.packet_source = packet_source.BlackBodySimpleSource(seed)
         self.spectrum_frequency = spectrum_frequency
-
 
     def _initialize_estimator_arrays(self, no_of_shells, tau_sobolev_shape):
         """
@@ -39,11 +38,10 @@ class MontecarloRunner(object):
         model: ~Radial1DModel
         """
 
-        #Estimators
+        # Estimators
         self.j_estimator = np.zeros(no_of_shells, dtype=np.float64)
         self.nu_bar_estimator = np.zeros(no_of_shells, dtype=np.float64)
         self.j_blue_estimator = np.zeros(tau_sobolev_shape)
-
 
     def _initialize_geometry_arrays(self, structure):
         """
@@ -59,7 +57,8 @@ class MontecarloRunner(object):
         self.v_inner_cgs = structure.v_inner.to('cm/s').value
 
     def _initialize_packets(self, T, no_of_packets, no_of_virtual_packets=None):
-        nus, mus, energies = self.packet_source.create_packets(T, no_of_packets)
+        nus, mus, energies = self.packet_source.create_packets(
+            T, no_of_packets)
         self.input_nu = nus
         self.input_mu = mus
         self.input_energy = energies
@@ -73,9 +72,9 @@ class MontecarloRunner(object):
             no_of_packets, dtype=np.int64)
         self.last_line_interaction_shell_id = -1 * np.ones(
             no_of_packets, dtype=np.int64)
-        self.last_interaction_type = -1 * np.ones(no_of_packets, dtype=np.int64)
+        self.last_interaction_type = -1 * \
+            np.ones(no_of_packets, dtype=np.int64)
         self.last_interaction_in_nu = np.zeros(no_of_packets, dtype=np.float64)
-
 
         self.legacy_montecarlo_virtual_luminosity = np.zeros_like(
             self.spectrum_frequency.value)
@@ -117,7 +116,6 @@ class MontecarloRunner(object):
         return ['scatter', 'downbranch', 'macroatom'].index(
             line_interaction_type)
 
-
     @property
     def output_nu(self):
         return u.Quantity(self._output_nu, u.Hz)
@@ -132,7 +130,7 @@ class MontecarloRunner(object):
 
     @property
     def emitted_packet_mask(self):
-        return self.output_energy >=0
+        return self.output_energy >= 0
 
     @property
     def emitted_packet_nu(self):
@@ -145,7 +143,6 @@ class MontecarloRunner(object):
     @property
     def reabsorbed_packet_luminosity(self):
         return -self.packet_luminosity[~self.emitted_packet_mask]
-
 
     @property
     def emitted_packet_luminosity(self):
@@ -168,7 +165,7 @@ class MontecarloRunner(object):
         return emitted_luminosity
 
     def calculate_reabsorbed_luminosity(self, luminosity_nu_start,
-                                     luminosity_nu_end):
+                                        luminosity_nu_end):
 
         luminosity_wavelength_filter = (
             (self.reabsorbed_packet_nu > luminosity_nu_start) &
@@ -178,7 +175,6 @@ class MontecarloRunner(object):
             luminosity_wavelength_filter].sum()
 
         return reabsorbed_luminosity
-
 
     def calculate_radiationfield_properties(self):
         """
@@ -201,12 +197,8 @@ class MontecarloRunner(object):
 
         """
 
-
-        t_rad = (self.t_rad_estimator_constant * self.nu_bar_estimator
-                / self.j_estimator)
-        w = self.j_estimator / (4 * const.sigma_sb.cgs.value * t_rad ** 4
-                                * self.time_of_simulation.value
-                                * self.volume.value)
+        t_rad = (self.t_rad_estimator_constant * self.nu_bar_estimator / self.j_estimator)
+        w = self.j_estimator / (4 * const.sigma_sb.cgs.value * t_rad ** 4 * self.time_of_simulation.value * self.volume.value)
 
         return t_rad * u.K, w
 

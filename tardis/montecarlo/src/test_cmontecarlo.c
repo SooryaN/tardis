@@ -5,7 +5,11 @@
 #include <string.h>
 
 #include "cmontecarlo.h"
-
+#include "cmontecarlo.c"
+#include "rpacket.h"
+#include "rpacket.c"
+#include "randomkit/rk_mt.h"
+#include "randomkit/rk_mt.c"
 
 rpacket_t * rp;
 storage_model_t * sm;
@@ -439,4 +443,9 @@ test_montecarlo_free_free_scatter(void){
 	montecarlo_free_free_scatter(&rp, &sm, DISTANCE,&mt_state);
         dealloc_storage_model(&sm);
 	return rpacket_get_status(&rp);
+}
+int main(int argc, char const *argv[])
+{
+    test_increment_j_blue_estimator();
+    return 0;
 }
