@@ -350,23 +350,36 @@ move_packet (rpacket_t * packet, storage_model_t * storage, double distance)
 }
 
 void
-increment_j_blue_estimator (const rpacket_t * packet, storage_model_t * storage,
-                            double d_line, int64_t j_blue_idx)
-{
-    printf("123\n");
-  double r = rpacket_get_r (packet);
+increment_j_blue_estimator(const rpacket_t * packet, storage_model_t * storage,
+  double d_line, int64_t j_blue_idx) {
+  int i = 1;
+  int count = 0;
+
+  double r = rpacket_get_r(packet);
   double r_interaction =
-    sqrt (r * r + d_line * d_line +
-          2.0 * r * d_line * rpacket_get_mu (packet));
-  double mu_interaction = (rpacket_get_mu (packet) * r + d_line) / r_interaction;
+    sqrt(r * r + d_line * d_line +
+      2.0 * r * d_line * rpacket_get_mu(packet));
+  double mu_interaction = (rpacket_get_mu(packet) * r + d_line) / r_interaction;
   double doppler_factor = 1.0 - mu_interaction * r_interaction *
     storage->inverse_time_explosion * INVERSE_C;
-  double comov_energy = rpacket_get_energy (packet) * doppler_factor;
-#ifdef WITHOPENMP
-#pragma omp atomic
-#endif
+  double comov_energy = rpacket_get_energy(packet) * doppler_factor;
+  #ifdef WITHOPENMP
+  # pragma omp atomic
+  # endif
   storage->line_lists_j_blues[j_blue_idx] +=
-    comov_energy / rpacket_get_nu (packet);
+    comov_energy / rpacket_get_nu(packet);
+
+  printf("line lists j blues: %f\n", storage->line_lists_j_blues[0]);
+  printf("r-packet frequency: %f\n", rpacket_get_nu(packet) * doppler_factor);
+  printf("r-packet energy: %f\n", rpacket_get_energy(packet));
+  //printf("%"PRId64"\n", storage->no_of_lines);
+  while (fabs(storage->line_list_nu[i]) >= 0.0000005) {
+    printf("%d, %f,delta: %f\n", i, storage->line_list_nu[i - 1], storage->line_list_nu[i - 1] - storage->line_list_nu[i]);
+    if (fabs(storage->line_list_nu[i - 1] - storage->line_list_nu[i] - rpacket_get_nu(packet) * doppler_factor) <= 0.0000005)
+      count++;
+    i++;
+  }
+  printf("count: %d\n", count);
 }
 
 int64_t
